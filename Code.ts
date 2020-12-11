@@ -4,8 +4,6 @@ const onFormSubmit = (event: GoogleAppsScript.Events.SheetsOnFormSubmit) => {
   Logger.log(event.namedValues)
   var sheet = SpreadsheetApp.getActiveSheet();
   var rowIndex = event.range.getLastRow();
-  // let values = [['TRUE', new Date()]];
-  // sheet.getRange(event.range.getLastRow(), 4, 1, 2).setValues(values);
   var name = sheet.getRange(rowIndex, 2).getValue();
   var email = sheet.getRange(rowIndex, 3).getValue();
   var city = sheet.getRange(rowIndex, 5).getValue();
@@ -46,14 +44,7 @@ const postToLob = (userInfo, rowIndex) => {
     from: null,
     front: '<html style="padding: 1in; font-size: 50;"></html>',
     back: "tmpl_3cdf2f9422f2968",
-    // '<html style="padding: 1in; font-size: 20;">{{city}} {{reason}} {{name}} {{email}}</html>',
-    
-    
     merge_variables: {
-      // name: 'Harry',
-      // email: 'me@email.com',
-      // city: 'Tuscon',
-      // reason: 'too expensive',
       name: userInfo.name,
       email: userInfo.email,
       city: userInfo.city,
@@ -77,12 +68,10 @@ const postToLob = (userInfo, rowIndex) => {
      // @ts-ignore
     let response = UrlFetchApp.fetch(url, options);
     var responseCode = response.getResponseCode();
-    var responseBody = response.getContentText();
     var sheet = SpreadsheetApp.getActiveSheet();
-    sheet.getRange(rowIndex, 11).setValue(responseCode);
+    var values = [[new Date(), responseCode]];
+    sheet.getRange(rowIndex, 11, 1, 2).setValues(values);
     Logger.log('response: ', response);
-    Logger.log('responseCode: ', responseCode);
-    Logger.log('responseBody: ', responseBody);
   } catch (error) {
     Logger.log('error: ', error);
   }
