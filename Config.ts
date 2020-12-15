@@ -5,3 +5,10 @@ const back_tmpl = "tmpl_3cdf2f9422f2968";
 // PropertiesService.getScriptProperties().setProperty("API_KEY", "test_7116a24dd8a038acadc7bbed8eff2c55168");
 
 const API_KEY = PropertiesService.getScriptProperties().getProperty('API_KEY');
+
+
+const columnIndices = {
+    NAME: 1,
+    EMAIL: 3,
+    REASON: 4
+}
