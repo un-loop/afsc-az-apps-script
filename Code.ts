@@ -19,6 +19,7 @@ const createOnFormSubmitTrigger = () => {
   let ss = SpreadsheetApp.getActive();
   ScriptApp.newTrigger('onFormSubmit')
     .forSpreadsheet(ss)
+    .onFormSubmit()
     .create();
 };
 
@@ -61,7 +62,7 @@ const sendConfirmationEmail = (userInfo, rowIndex) => {
   if (email_sent !== EMAIL_SENT) {
     let subject = "Reframing Justice Project";
     MailApp.sendEmail(userInfo.email, subject, message, { htmlBody: buildHTMLBody(userInfo.fname) });
-    Logger.log('htmlBody to see if coming through at all: ', buildHTMLBody(userInfo.name));
+    Logger.log('htmlBody to see if coming through at all: ', buildHTMLBody(userInfo.fname));
     sheet.getRange(rowIndex, columnIndices.EMAIL_SENT).setValue(EMAIL_SENT);
     SpreadsheetApp.flush();
   }

@@ -11,8 +11,8 @@ const columnIndices = {
     FNAME: 2,
     LNAME: 10,
     EMAIL: 3,
-    CITY: 5,
-    REASON: 6,
+    CITY: 4,
+    REASON: 5,
     EMAIL_SENT: 11,
     SENT_TO_LOB: 12,
     STATUS_CODE: 13
