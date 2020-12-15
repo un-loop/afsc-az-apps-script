@@ -38,9 +38,18 @@ const buildHTMLBody = (fname) => `<!DOCTYPE html>
 </html>`;
 
 const EMAIL_SENT = 'EMAIL_SENT';
+const QUOTA_EXCEEDED = 'QUOTA_EXCEEDED';
 const sendConfirmationEmail = (userInfo, rowIndex) => {
   let sheet = SpreadsheetApp.getActiveSheet();
   let emailQuotaRemaining = MailApp.getRemainingDailyQuota();
+
+  // if we max out the quota (100 emails/24 hour period rolling)
+  // emails will be locked up for 24 hours, so don't send an email
+  if (emailQuotaRemaining < 30) {
+    sheet.getRange(rowIndex, columnIndices.EMAIL_SENT).setValue(QUOTA_EXCEEDED);
+    return;
+  }
+
   let message = `Hi ${userInfo.fname},
 
   Thank you for using the Reframing Justice Postcard Generator to tell Arizona lawmakers why you support sentencing reform! Be sure to follow AFSC-Arizona on Facebook, Instagram & Twitter so you can help amplify our message and stay up-to-date on legislative developments.
