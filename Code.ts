@@ -35,14 +35,19 @@ const buildHTMLBody = (fname) => `<!DOCTYPE html>
     <p>Stay safe & stay strong!</p>
     <p>AFSC-Arizona | ReFraming Justice</p>
   </body>
-</html>`
+</html>`;
 
 const EMAIL_SENT = 'EMAIL_SENT';
 const sendConfirmationEmail = (userInfo, rowIndex) => {
   let sheet = SpreadsheetApp.getActiveSheet();
   let emailQuotaRemaining = MailApp.getRemainingDailyQuota();
+  let message = `Hi ${userInfo.fname},
+
+  Thank you for using the Reframing Justice Postcard Generator to tell Arizona lawmakers why you support sentencing reform! Be sure to follow AFSC-Arizona on Facebook, Instagram & Twitter so you can help amplify our message and stay up-to-date on legislative developments.
+  
+  Stay safe & stay strong!
+  AFSC-Arizona | ReFraming Justice`;
   Logger.log("Remaining email quota: " + emailQuotaRemaining);
-  let message = "Thank you for participating " + userInfo.fname + ". A postcard will be created in your name and delivered to the legislators.";
   let email_sent = sheet.getRange(rowIndex, columnIndices.EMAIL_SENT).getValue();
   if (email_sent !== EMAIL_SENT) {
     let subject = "Reframing Justice Project";
