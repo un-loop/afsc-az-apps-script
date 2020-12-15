@@ -4,13 +4,14 @@ const onFormSubmit = (event: GoogleAppsScript.Events.SheetsOnFormSubmit) => {
   Logger.log(event.namedValues)
   let sheet = SpreadsheetApp.getActiveSheet();
   let rowIndex = event.range.getLastRow();
-  let name = sheet.getRange(rowIndex, 2).getValue();
-  let email = sheet.getRange(rowIndex, 3).getValue();
-  let city = sheet.getRange(rowIndex, 5).getValue();
-  let reason = sheet.getRange(rowIndex, 6).getValue();
-  const userInfo = {name, email, city, reason};
+  let fname = sheet.getRange(rowIndex, columnIndices.FNAME).getValue();
+  let lname = sheet.getRange(rowIndex, columnIndices.LNAME).getValue();
+  let email = sheet.getRange(rowIndex, columnIndices.EMAIL).getValue();
+  let city = sheet.getRange(rowIndex, columnIndices.CITY).getValue();
+  let reason = sheet.getRange(rowIndex, columnIndices.REASON).getValue();
+  const userInfo = {fname, lname, email, city, reason};
   Logger.log('userInfo: ', userInfo);
-  postToLob(userInfo, rowIndex);
+  // postToLob(userInfo, rowIndex);
   sendConfirmationEmail(userInfo, rowIndex);
 };
 
@@ -21,13 +22,13 @@ const createOnFormSubmitTrigger = () => {
     .create();
 };
 
-const buildHTMLBody = (name) => `<!DOCTYPE html>
+const buildHTMLBody = (fname) => `<!DOCTYPE html>
 <html>
   <head>
     <base target="_top">
   </head>
   <body>
-    <p>Hi ${name}, </p>
+    <p>Hi ${fname}, </p>
     <br />
     <p>Thank you for using the <a href="http://afscarizona.org/send-postcard/">ReFraming Justice Postcard Generator</a> to tell Arizona lawmakers why you support sentencing reform! Be sure to follow AFSC-Arizona on <a href="https://www.facebook.com/AFSCArizona">Facebook</a>, <a href="https://www.instagram.com/afscaz/">Instagram</a> & <a href="https://twitter.com/afscaz">Twitter</a> so you can help amplify our message and stay up-to-date on legislative developments.</p>
     <br />
@@ -41,13 +42,13 @@ const sendConfirmationEmail = (userInfo, rowIndex) => {
   let sheet = SpreadsheetApp.getActiveSheet();
   let emailQuotaRemaining = MailApp.getRemainingDailyQuota();
   Logger.log("Remaining email quota: " + emailQuotaRemaining);
-  let message = "Thank you for participating " + userInfo.name + ". A postcard will be created in your name and delivered to the legislators.";
-  let email_sent = sheet.getRange(rowIndex, 10).getValue();
+  let message = "Thank you for participating " + userInfo.fname + ". A postcard will be created in your name and delivered to the legislators.";
+  let email_sent = sheet.getRange(rowIndex, columnIndices.EMAIL_SENT).getValue();
   if (email_sent !== EMAIL_SENT) {
     let subject = "Reframing Justice Project";
-    MailApp.sendEmail(userInfo.email, subject, message, { htmlBody: buildHTMLBody(userInfo.name) });
+    MailApp.sendEmail(userInfo.email, subject, message, { htmlBody: buildHTMLBody(userInfo.fname) });
     Logger.log('htmlBody to see if coming through at all: ', buildHTMLBody(userInfo.name));
-    sheet.getRange(rowIndex, 10).setValue(EMAIL_SENT);
+    sheet.getRange(rowIndex, columnIndices.EMAIL_SENT).setValue(EMAIL_SENT);
     SpreadsheetApp.flush();
   }
 };
@@ -61,7 +62,8 @@ const postToLob = (userInfo, rowIndex) => {
     front: '<html style="padding: 1in; font-size: 50;"></html>',
     back: back_tmpl,
     merge_variables: {
-      name: userInfo.name,
+      fname: userInfo.fname,
+      lname: userInfo.lname,
       email: userInfo.email,
       city: userInfo.city,
       reason: userInfo.reason,
@@ -86,7 +88,7 @@ const postToLob = (userInfo, rowIndex) => {
     let responseCode = response.getResponseCode();
     let sheet = SpreadsheetApp.getActiveSheet();
     let values = [[new Date(), responseCode]];
-    sheet.getRange(rowIndex, 11, 1, 2).setValues(values);
+    sheet.getRange(rowIndex, columnIndices.SENT_TO_LOB, 1, 2).setValues(values);
     Logger.log('testing options: ', options);
     Logger.log('response: ', response);
   } catch (error) {

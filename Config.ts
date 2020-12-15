@@ -8,7 +8,12 @@ const API_KEY = PropertiesService.getScriptProperties().getProperty('API_KEY');
 
 
 const columnIndices = {
-    NAME: 1,
+    FNAME: 2,
+    LNAME: 10,
     EMAIL: 3,
-    REASON: 4
-}
+    CITY: 5,
+    REASON: 6,
+    EMAIL_SENT: 11,
+    SENT_TO_LOB: 12,
+    STATUS_CODE: 13
+};
