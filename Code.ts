@@ -1,22 +1,38 @@
 import { Header } from './Header';
 
+// todo from jessi: a method of how to take out the building of the user info data! the user info will also need to be
+//  built out for other trigers beyond onFormSubmit, so it should be made more reusable
+interface UserInfo {
+  fname: string
+  lname: string
+  email: string
+  city: string
+  reason: string
+  include: string
+}
+
+const buildUserInfo = (sheet: GoogleAppsScript.Spreadsheet.Sheet, rowIndex: number, header: any): UserInfo => (
+  {
+    fname: sheet.getRange(rowIndex, header.FIRST_NAME).getValue(),
+    lname: sheet.getRange(rowIndex, header.LAST_NAME).getValue(),
+    email: sheet.getRange(rowIndex, header.EMAIL_ADDRESS).getValue(),
+    city: sheet.getRange(rowIndex, header.CITY).getValue(),
+    reason: sheet.getRange(rowIndex, header.REASON).getValue(),
+    include: sheet.getRange(rowIndex, header.EMAIL_INCLUDE).getValue()
+  }
+)
 
 const onFormSubmit = (event: GoogleAppsScript.Events.SheetsOnFormSubmit) => {
   let sheet = SpreadsheetApp.getActiveSheet();
   let header = Header.fieldToIndex(sheet, requiredFields);
   let rowIndex = event.range.getLastRow();
-  let fname = sheet.getRange(rowIndex, header.FIRST_NAME).getValue();
-  let lname = sheet.getRange(rowIndex, header.LAST_NAME).getValue();
-  let email = sheet.getRange(rowIndex, header.EMAIL_ADDRESS).getValue();
-  let city = sheet.getRange(rowIndex, header.CITY).getValue();
-  let reason = sheet.getRange(rowIndex, header.REASON).getValue();
-  let include = sheet.getRange(rowIndex, header.EMAIL_INCLUDE).getValue();
-  const userInfo = {fname, lname, email, city, reason, include};
+  const userInfo = buildUserInfo(sheet, rowIndex, header)
   postToLob(userInfo, rowIndex, header, sheet);
   sendConfirmationEmail(userInfo, rowIndex, header, sheet);
 };
 
-const buildHTMLBody = (fname) => `<!DOCTYPE html>
+// example from Jessi how to define types in function definitions
+const buildHTMLBody = (fname: string): string => `<!DOCTYPE html>
 <html>
   <head>
     <base target="_top">
@@ -33,6 +49,7 @@ const buildHTMLBody = (fname) => `<!DOCTYPE html>
 
 const EMAIL_SENT = 'EMAIL_SENT';
 const QUOTA_EXCEEDED = 'QUOTA_EXCEEDED';
+// todo from jessi: please add in types in your function parameter definitions (see onFormSubmit for how to do it)
 const sendConfirmationEmail = (userInfo, rowIndex, header, sheet) => {
   let emailQuotaRemaining = MailApp.getRemainingDailyQuota();
 
@@ -59,6 +76,7 @@ const sendConfirmationEmail = (userInfo, rowIndex, header, sheet) => {
   }
 };
 
+// todo from jessi: please add in types in your function parameter definitions (see onFormSubmit for how to do it)
 const postToLob = (userInfo, rowIndex, header, sheet) => {
   let url = "https://api.lob.com/v1/postcards";
   let data = {

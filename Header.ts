@@ -1,9 +1,3 @@
-import Range = GoogleAppsScript.Spreadsheet.Range
-
-const HEADER_DELIMITER = '('
-const NO_CHANGE = {
-    changed: false
-}
 
 export class Header {
     //takes in an array representing a header row and returns
