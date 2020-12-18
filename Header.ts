@@ -51,15 +51,15 @@ export class Header {
     //takes in an array representing a header row and returns
     //an object mapping field ID to its index (starting at 0)
     static fieldToIndex(sheet: GoogleAppsScript.Spreadsheet.Sheet, requiredFields:string[]): any {
-        // let headerRow = sheet.getRange(2, 1, 1, 15).getValues();
+        let headerRow = sheet.getRange(1, 1, 1, 15).getValues()[0];
         
-        let headerRow = this.getHeaderRow(sheet)
+        // let headerRow = this.getHeaderRow(sheet)
         Logger.log('headerRow', headerRow);
         let missingFields = requiredFields.slice();
         let header = {}
         for (let i = 0; i < headerRow.length; i++) {
             let fieldName = headerRow[i]
-            header[fieldName] = i
+            header[fieldName] = i;
             Logger.log('fieldName', fieldName);
             Logger.log('header', header);
             // if the parsed field name is in the required fields list, remove it from the
