@@ -9,55 +9,58 @@ export class Header {
 
     //takes in an on edit event and checks to see if
     //the edit event is happening to a header row
-    static checkHeader(editEvent): HeaderCheck {
-        var range:Range = editEvent.range
-        var rowIndex:number = range.getRow()
-        if (rowIndex > 1) {
-            return NO_CHANGE
-        }
-        //do not allow users to change a header that already exists
-        //TODO: what if they add a new column? Wonder if we should limit this to be max column check too
-        if (editEvent.oldValue && editEvent.oldValue.length > 0) {
-            var oldIdentifier = this.rawHeaderToFieldId(editEvent.oldValue)
-            var newIdentifier = this.rawHeaderToFieldId(editEvent.value)
+                // static checkHeader(editEvent): HeaderCheck {
+                //     var range:Range = editEvent.range
+                //     var rowIndex:number = range.getRow()
+                //     if (rowIndex > 1) {
+                //         return NO_CHANGE
+                //     }
+                //     //do not allow users to change a header that already exists
+                //     //TODO: what if they add a new column? Wonder if we should limit this to be max column check too
+                //     if (editEvent.oldValue && editEvent.oldValue.length > 0) {
+                //         var oldIdentifier = this.rawHeaderToFieldId(editEvent.oldValue)
+                //         var newIdentifier = this.rawHeaderToFieldId(editEvent.value)
 
-            if (oldIdentifier !== newIdentifier) {
-                return {
-                    changed: true,
-                    column: range.getColumn(),
-                    oldFieldID: oldIdentifier,
-                    newFieldID: newIdentifier,
-                }
-            }
-        }
+                //         if (oldIdentifier !== newIdentifier) {
+                //             return {
+                //                 changed: true,
+                //                 column: range.getColumn(),
+                //                 oldFieldID: oldIdentifier,
+                //                 newFieldID: newIdentifier,
+                //             }
+                //         }
+                //     }
 
-        return NO_CHANGE
-    }
+                //     return NO_CHANGE
+                // }
     // BECKY: prob don't need this - we have good names already
     // given a header value, strip away comments, convert to uppercase, and convert all spaces to underscore
-    static rawHeaderToFieldId(rawField:string): string {
-        let commaIndex = rawField.indexOf(HEADER_DELIMITER)
-        if (commaIndex !== -1) {
-            rawField = rawField.slice(0, commaIndex)
-        }
+            // static rawHeaderToFieldId(rawField:string): string {
+            //     let commaIndex = rawField.indexOf(HEADER_DELIMITER)
+            //     if (commaIndex !== -1) {
+            //         rawField = rawField.slice(0, commaIndex)
+            //     }
 
-        let removeSpecialChars = rawField.replace(/[^\w\s\d]/g, '')
-        return removeSpecialChars
-            .trim()
-            .toUpperCase()
-            .split(' ').join('_')
-    }
+            //     let removeSpecialChars = rawField.replace(/[^\w\s\d]/g, '')
+            //     return removeSpecialChars
+            //         .trim()
+            //         .toUpperCase()
+            //         .split(' ').join('_')
+            // }
     // BECKY: this
     //takes in an array representing a header row and returns
     //an object mapping field ID to its index (starting at 0)
     static fieldToIndex(sheet: GoogleAppsScript.Spreadsheet.Sheet, requiredFields:string[]): any {
-        let headerRow = this.getHeaderRow(sheet)
+        let headerRow = sheet.getRange(2, 1, 1, 15).getValues();
+        Logger.log('headerRow', headerRow);
+        // let headerRow = this.getHeaderRow(sheet)
         let missingFields = requiredFields.slice();
         let header = {}
         for (let i = 0; i < headerRow.length; i++) {
-            let rawField = headerRow[i]
-            let fieldName = Header.rawHeaderToFieldId(rawField)
+            let fieldName = headerRow[i]
             header[fieldName] = i
+            Logger.log('fieldName', fieldName);
+            Logger.log('header', header);
             // if the parsed field name is in the required fields list, remove it from the
             // missing fields list so it won't trigger a validation error
             let requiredFieldIndex = missingFields.indexOf(fieldName)

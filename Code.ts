@@ -1,17 +1,23 @@
+import { Header } from './Header';
+
+
 const onFormSubmit = (event: GoogleAppsScript.Events.SheetsOnFormSubmit) => {
   Logger.log(event);
   Logger.log(JSON.stringify(event));
   Logger.log(event.namedValues)
   let sheet = SpreadsheetApp.getActiveSheet();
+  let header = Header.fieldToIndex(sheet, requiredFields);
   let rowIndex = event.range.getLastRow();
-  let fname = sheet.getRange(rowIndex, columnIndices.FNAME).getValue();
-  let lname = sheet.getRange(rowIndex, columnIndices.LNAME).getValue();
-  let email = sheet.getRange(rowIndex, columnIndices.EMAIL).getValue();
-  let city = sheet.getRange(rowIndex, columnIndices.CITY).getValue();
-  let reason = sheet.getRange(rowIndex, columnIndices.REASON).getValue();
-  const userInfo = {fname, lname, email, city, reason};
+  let fname = sheet.getRange(rowIndex, header.FIRST_NAME).getValue();
+  // let fname = sheet.getRange(rowIndex, columnIndices.FNAME).getValue();
+  let lname = sheet.getRange(rowIndex, header.LAST_NAME).getValue();
+  let email = sheet.getRange(rowIndex, header.EMAIL_ADDRESS).getValue();
+  let city = sheet.getRange(rowIndex, header.CITY).getValue();
+  let reason = sheet.getRange(rowIndex, header.REASON).getValue();
+  let include = sheet.getRange(rowIndex, header.EMAIL_INCLUDE).getValue();
+  const userInfo = {fname, lname, email, city, reason, include};
   Logger.log('userInfo: ', userInfo);
-  // postToLob(userInfo, rowIndex);
+  postToLob(userInfo, rowIndex);
   sendConfirmationEmail(userInfo, rowIndex);
 };
 
@@ -42,39 +48,42 @@ const EMAIL_SENT = 'EMAIL_SENT';
 const QUOTA_EXCEEDED = 'QUOTA_EXCEEDED';
 const sendConfirmationEmail = (userInfo, rowIndex) => {
   let sheet = SpreadsheetApp.getActiveSheet();
+  let header = Header.fieldToIndex(sheet, requiredFields);
   let emailQuotaRemaining = MailApp.getRemainingDailyQuota();
 
   // if we max out the quota (100 emails/24 hour period rolling)
   // emails will be locked up for 24 hours, so don't send an email
   if (emailQuotaRemaining < 30) {
-    sheet.getRange(rowIndex, columnIndices.EMAIL_SENT).setValue(QUOTA_EXCEEDED);
+    sheet.getRange(rowIndex, header.EMAIL_SENT).setValue(QUOTA_EXCEEDED);
     return;
   }
 
   let message = `Hi ${userInfo.fname},
 
-  Thank you for using the Reframing Justice Postcard Generator to tell Arizona lawmakers why you support sentencing reform! Be sure to follow AFSC-Arizona on Facebook, Instagram & Twitter so you can help amplify our message and stay up-to-date on legislative developments.
+  Thank you for using the ReFraming Justice Postcard Generator to tell Arizona lawmakers why you support sentencing reform! Be sure to follow AFSC-Arizona on Facebook, Instagram & Twitter so you can help amplify our message and stay up-to-date on legislative developments.
   
   Stay safe & stay strong!
   AFSC-Arizona | ReFraming Justice`;
   Logger.log("Remaining email quota: " + emailQuotaRemaining);
-  let email_sent = sheet.getRange(rowIndex, columnIndices.EMAIL_SENT).getValue();
+  let email_sent = sheet.getRange(rowIndex, header.EMAIL_SENT).getValue();
   if (email_sent !== EMAIL_SENT) {
-    let subject = "Reframing Justice Project";
+    let subject = "ReFraming Justice Project";
     MailApp.sendEmail(userInfo.email, subject, message, { htmlBody: buildHTMLBody(userInfo.fname) });
     Logger.log('htmlBody to see if coming through at all: ', buildHTMLBody(userInfo.fname));
-    sheet.getRange(rowIndex, columnIndices.EMAIL_SENT).setValue(EMAIL_SENT);
+    sheet.getRange(rowIndex, header.EMAIL_SENT).setValue(EMAIL_SENT);
     SpreadsheetApp.flush();
   }
 };
 
 const postToLob = (userInfo, rowIndex) => {
+  let sheet = SpreadsheetApp.getActiveSheet();
+  let header = Header.fieldToIndex(sheet, requiredFields);
   let url = "https://api.lob.com/v1/postcards";
   let data = {
-    description: "Test template for postcard",
+    description: "Postcard",
       to: toAddress,
     from: null,
-    front: '<html style="padding: 1in; font-size: 50;"></html>',
+    front: front_tmpl,
     back: back_tmpl,
     merge_variables: {
       fname: userInfo.fname,
@@ -103,7 +112,7 @@ const postToLob = (userInfo, rowIndex) => {
     let responseCode = response.getResponseCode();
     let sheet = SpreadsheetApp.getActiveSheet();
     let values = [[new Date(), responseCode]];
-    sheet.getRange(rowIndex, columnIndices.SENT_TO_LOB, 1, 2).setValues(values);
+    sheet.getRange(rowIndex, header.SENT_TO_LOB, 1, 2).setValues(values);
     Logger.log('testing options: ', options);
     Logger.log('response: ', response);
   } catch (error) {
