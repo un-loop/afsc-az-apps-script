@@ -18,6 +18,8 @@ const buildUserInfo = (sheet: GoogleAppsScript.Spreadsheet.Sheet, rowIndex: numb
     email: sheet.getRange(rowIndex, header.EMAIL_ADDRESS).getValue(),
     city: sheet.getRange(rowIndex, header.CITY).getValue(),
     reason: sheet.getRange(rowIndex, header.REASON).getValue(),
+    // fixme from jessi: "include" should be renamed, it isn't clear to me what it means as I'm reading the code elsewhere.
+    //  should be something more explicit... like includeEmail?
     include: sheet.getRange(rowIndex, header.EMAIL_INCLUDE).getValue()
   }
 )
