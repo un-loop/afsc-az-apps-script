@@ -21,14 +21,6 @@ const onFormSubmit = (event: GoogleAppsScript.Events.SheetsOnFormSubmit) => {
   sendConfirmationEmail(userInfo, rowIndex);
 };
 
-const createOnFormSubmitTrigger = () => {
-  let ss = SpreadsheetApp.getActive();
-  ScriptApp.newTrigger('onFormSubmit')
-    .forSpreadsheet(ss)
-    .onFormSubmit()
-    .create();
-};
-
 const buildHTMLBody = (fname) => `<!DOCTYPE html>
 <html>
   <head>
