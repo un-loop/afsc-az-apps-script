@@ -1,8 +1,7 @@
 import { Header } from './Header';
 
 const idempotencyKey: string = Utilities.getUuid(); 
-// todo from jessi: a method of how to take out the building of the user info data! the user info will also need to be
-//  built out for other trigers beyond onFormSubmit, so it should be made more reusable
+
 interface UserInfo {
   fname: string
   lname: string
@@ -34,7 +33,6 @@ const onFormSubmit = (event: GoogleAppsScript.Events.SheetsOnFormSubmit) => {
   sendConfirmationEmail(userInfo, rowIndex, header, sheet);
 };
 
-// example from Jessi how to define types in function definitions
 const buildHTMLBody = (fname: string): string => `<!DOCTYPE html>
 <html>
   <head>
@@ -52,7 +50,7 @@ const buildHTMLBody = (fname: string): string => `<!DOCTYPE html>
 
 const EMAIL_SENT = 'EMAIL_SENT';
 const QUOTA_EXCEEDED = 'QUOTA_EXCEEDED';
-// todo from jessi: please add in types in your function parameter definitions (see onFormSubmit for how to do it)
+
 const sendConfirmationEmail = (userInfo: UserInfo, rowIndex: number, header: any, sheet: GoogleAppsScript.Spreadsheet.Sheet) => {
   let emailQuotaRemaining = MailApp.getRemainingDailyQuota();
 
@@ -80,7 +78,6 @@ const sendConfirmationEmail = (userInfo: UserInfo, rowIndex: number, header: any
   }
 };
 
-// todo from jessi: please add in types in your function parameter definitions (see onFormSubmit for how to do it)
 const postToLob = (userInfo: UserInfo, rowIndex: number, header: any, sheet: GoogleAppsScript.Spreadsheet.Sheet) => {
   if (userInfo.include_email === '') {
     userInfo.email = '';
@@ -112,9 +109,36 @@ const postToLob = (userInfo: UserInfo, rowIndex: number, header: any, sheet: Goo
     let responseCode = response.getResponseCode();
     let values = [[new Date(), responseCode]];
     sheet.getRange(rowIndex, header.SENT_TO_LOB, 1, 2).setValues(values);
+    if (responseCode !== 200) {
+      retryFailedPost(userInfo, rowIndex, header, sheet);
+    }
   } catch (error) {
     Logger.log('error: ', error);
-  }
-
+  };
 };
 
+const retryFailedPost = (userInfo: UserInfo, rowIndex: number, header: any, sheet: GoogleAppsScript.Spreadsheet.Sheet) => {
+  let retry_count = sheet.getRange(rowIndex, header.RETRY_COUNT).getValue();
+  if (retry_count < 4) {
+    postToLob(userInfo, rowIndex, header, sheet);
+    sheet.getRange(rowIndex, header.RETRY_COUNT).setValue(retry_count + 1);
+  }
+};
+
+const onOpen = () => {
+  let ui = SpreadsheetApp.getUi();
+  let sheet = SpreadsheetApp.getActiveSheet();
+  let header = Header.fieldToIndex(sheet, requiredFields);
+  let rangeData = sheet.getDataRange().offset(2, 0).getValues();
+  
+  for (let i = 0; i < rangeData.length; i++) {
+    let dataRow = rangeData[i];
+    // header map is 1 indexed, not 0 indexed
+    let statusCode = dataRow[header.STATUS_CODE-1];
+    if ((statusCode !== 200) && (dataRow[header.CITY-1] !== '')) {
+      Logger.log('not 200 ', statusCode);
+      Logger.log('email:', dataRow[header.EMAIL_ADDRESS-1]);
+    }
+
+  }
+}
