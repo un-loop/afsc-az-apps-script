@@ -1,6 +1,6 @@
 import { Header } from './Header';
 
-const idempotency_key: string = Utilities.getUuid(); 
+const idempotencyKey: string = Utilities.getUuid(); 
 // todo from jessi: a method of how to take out the building of the user info data! the user info will also need to be
 //  built out for other trigers beyond onFormSubmit, so it should be made more reusable
 interface UserInfo {
@@ -9,8 +9,8 @@ interface UserInfo {
   email: string
   city: string
   reason: string
-  include: string
-  key: string
+  include_email: string
+  idempotency_key: string
 }
 
 const buildUserInfo = (sheet: GoogleAppsScript.Spreadsheet.Sheet, rowIndex: number, header: any): UserInfo => (
@@ -20,9 +20,8 @@ const buildUserInfo = (sheet: GoogleAppsScript.Spreadsheet.Sheet, rowIndex: numb
     email: sheet.getRange(rowIndex, header.EMAIL_ADDRESS).getValue(),
     city: sheet.getRange(rowIndex, header.CITY).getValue(),
     reason: sheet.getRange(rowIndex, header.REASON).getValue(),
-    include: sheet.getRange(rowIndex, header.EMAIL_INCLUDE).getValue(),
-    key: sheet.getRange(rowIndex, header.IDEMPOTENCY_KEY).getValue()
-
+    include_email: sheet.getRange(rowIndex, header.EMAIL_INCLUDE).getValue(),
+    idempotency_key: sheet.getRange(rowIndex, header.IDEMPOTENCY_KEY).getValue()
   }
 )
 
@@ -30,7 +29,7 @@ const onFormSubmit = (event: GoogleAppsScript.Events.SheetsOnFormSubmit) => {
   let sheet = SpreadsheetApp.getActiveSheet();
   let header = Header.fieldToIndex(sheet, requiredFields);
   let rowIndex = event.range.getLastRow();
-  sheet.getRange(rowIndex, header.IDEMPOTENCY_KEY).setValue(idempotency_key);
+  sheet.getRange(rowIndex, header.IDEMPOTENCY_KEY).setValue(idempotencyKey);
   const userInfo = buildUserInfo(sheet, rowIndex, header)
   sendConfirmationEmail(userInfo, rowIndex, header, sheet);
 };
@@ -83,7 +82,7 @@ const sendConfirmationEmail = (userInfo: UserInfo, rowIndex: number, header: any
 
 // todo from jessi: please add in types in your function parameter definitions (see onFormSubmit for how to do it)
 const postToLob = (userInfo: UserInfo, rowIndex: number, header: any, sheet: GoogleAppsScript.Spreadsheet.Sheet) => {
-  if (userInfo.include === '') {
+  if (userInfo.include_email === '') {
     userInfo.email = '';
   };
   let url = "https://api.lob.com/v1/postcards";
@@ -100,7 +99,7 @@ const postToLob = (userInfo: UserInfo, rowIndex: number, header: any, sheet: Goo
     contentType: 'application/json',
     headers: {
       Authorization: "Basic " + Utilities.base64Encode(API_KEY + ":"),
-      'Idempotency-key': userInfo.key,
+      'Idempotency-key': userInfo.idempotency_key,
     },
     payload: JSON.stringify(data),
     muteHttpExceptions: true
