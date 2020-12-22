@@ -1,6 +1,6 @@
 import { Header } from './Header';
 
-const idempotencyKey: string = Utilities.getUuid(); 
+const idempotencyKey: string = Utilities.getUuid();
 
 interface UserInfo {
   fname: string
@@ -12,15 +12,15 @@ interface UserInfo {
   idempotency_key: string
 }
 
-const buildUserInfo = (sheet: GoogleAppsScript.Spreadsheet.Sheet, rowIndex: number, header: any): UserInfo => (
+const buildUserInfo = (userRow: string[], header: any): UserInfo => (
   {
-    fname: sheet.getRange(rowIndex, header.FIRST_NAME).getValue(),
-    lname: sheet.getRange(rowIndex, header.LAST_NAME).getValue(),
-    email: sheet.getRange(rowIndex, header.EMAIL_ADDRESS).getValue(),
-    city: sheet.getRange(rowIndex, header.CITY).getValue(),
-    reason: sheet.getRange(rowIndex, header.REASON).getValue(),
-    include_email: sheet.getRange(rowIndex, header.EMAIL_INCLUDE).getValue(),
-    idempotency_key: sheet.getRange(rowIndex, header.IDEMPOTENCY_KEY).getValue()
+    fname: userRow[header.FIRST_NAME - 1],
+    lname: userRow[header.LAST_NAME - 1],
+    email: userRow[header.EMAIL_ADDRESS - 1],
+    city: userRow[header.CITY - 1],
+    reason: userRow[header.REASON - 1],
+    include_email: userRow[header.INCLUDE_EMAIL - 1],
+    idempotency_key: userRow[header.IDEMPOTENCY_KEY - 1]
   }
 )
 
@@ -29,7 +29,9 @@ const onFormSubmit = (event: GoogleAppsScript.Events.SheetsOnFormSubmit) => {
   let header = Header.fieldToIndex(sheet, requiredFields);
   let rowIndex = event.range.getLastRow();
   sheet.getRange(rowIndex, header.IDEMPOTENCY_KEY).setValue(idempotencyKey);
-  const userInfo = buildUserInfo(sheet, rowIndex, header)
+  let eventRow = sheet.getRange(rowIndex, 1, 1, sheet.getDataRange().getLastColumn()).getValues()[0]; // can grab zeroeth element only because onformsubmit is only ever one row
+  Logger.log("eventRow", eventRow);
+  const userInfo = buildUserInfo(eventRow, header);
   sendConfirmationEmail(userInfo, rowIndex, header, sheet);
 };
 
@@ -109,9 +111,9 @@ const postToLob = (userInfo: UserInfo, rowIndex: number, header: any, sheet: Goo
     let responseCode = response.getResponseCode();
     let values = [[new Date(), responseCode]];
     sheet.getRange(rowIndex, header.SENT_TO_LOB, 1, 2).setValues(values);
-    if (responseCode !== 200) {
-      retryFailedPost(userInfo, rowIndex, header, sheet);
-    }
+    // if (responseCode !== 200) {
+    //   retryFailedPost(userInfo, rowIndex, header, sheet);
+    // }
   } catch (error) {
     Logger.log('error: ', error);
   };
@@ -130,14 +132,19 @@ const onOpen = () => {
   let sheet = SpreadsheetApp.getActiveSheet();
   let header = Header.fieldToIndex(sheet, requiredFields);
   let rangeData = sheet.getDataRange().offset(2, 0).getValues();
-  
+
   for (let i = 0; i < rangeData.length; i++) {
     let dataRow = rangeData[i];
+    let userInfo = buildUserInfo(dataRow, header);
     // header map is 1 indexed, not 0 indexed
     let statusCode = dataRow[header.STATUS_CODE-1];
-    if ((statusCode !== 200) && (dataRow[header.CITY-1] !== '')) {
+    if ((statusCode !== 200) && (userInfo.city !== '')) {
       Logger.log('not 200 ', statusCode);
       Logger.log('email:', dataRow[header.EMAIL_ADDRESS-1]);
+      // sheetRowIndex is +3 because the rows are 1 based, and we offset by 2 when grabbing all of the data rows, so
+      // we didn't have to iterate over both header rows
+      const sheetRowIndex = i + 3;
+      retryFailedPost(userInfo, sheetRowIndex, header, sheet)
     }
 
   }
