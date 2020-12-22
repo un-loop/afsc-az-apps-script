@@ -1,5 +1,6 @@
 import { Header } from './Header';
 
+const idempotency_key: string = Utilities.getUuid(); 
 // todo from jessi: a method of how to take out the building of the user info data! the user info will also need to be
 //  built out for other trigers beyond onFormSubmit, so it should be made more reusable
 interface UserInfo {
@@ -9,6 +10,7 @@ interface UserInfo {
   city: string
   reason: string
   include: string
+  key: string
 }
 
 const buildUserInfo = (sheet: GoogleAppsScript.Spreadsheet.Sheet, rowIndex: number, header: any): UserInfo => (
@@ -18,7 +20,9 @@ const buildUserInfo = (sheet: GoogleAppsScript.Spreadsheet.Sheet, rowIndex: numb
     email: sheet.getRange(rowIndex, header.EMAIL_ADDRESS).getValue(),
     city: sheet.getRange(rowIndex, header.CITY).getValue(),
     reason: sheet.getRange(rowIndex, header.REASON).getValue(),
-    include: sheet.getRange(rowIndex, header.EMAIL_INCLUDE).getValue()
+    include: sheet.getRange(rowIndex, header.EMAIL_INCLUDE).getValue(),
+    key: sheet.getRange(rowIndex, header.IDEMPOTENCY_KEY).getValue()
+
   }
 )
 
@@ -26,8 +30,8 @@ const onFormSubmit = (event: GoogleAppsScript.Events.SheetsOnFormSubmit) => {
   let sheet = SpreadsheetApp.getActiveSheet();
   let header = Header.fieldToIndex(sheet, requiredFields);
   let rowIndex = event.range.getLastRow();
+  sheet.getRange(rowIndex, header.IDEMPOTENCY_KEY).setValue(idempotency_key);
   const userInfo = buildUserInfo(sheet, rowIndex, header)
-  postToLob(userInfo, rowIndex, header, sheet);
   sendConfirmationEmail(userInfo, rowIndex, header, sheet);
 };
 
@@ -50,7 +54,7 @@ const buildHTMLBody = (fname: string): string => `<!DOCTYPE html>
 const EMAIL_SENT = 'EMAIL_SENT';
 const QUOTA_EXCEEDED = 'QUOTA_EXCEEDED';
 // todo from jessi: please add in types in your function parameter definitions (see onFormSubmit for how to do it)
-const sendConfirmationEmail = (userInfo, rowIndex, header, sheet) => {
+const sendConfirmationEmail = (userInfo: UserInfo, rowIndex: number, header: any, sheet: GoogleAppsScript.Spreadsheet.Sheet) => {
   let emailQuotaRemaining = MailApp.getRemainingDailyQuota();
 
   // if we max out the quota (100 emails/24 hour period rolling)
@@ -73,11 +77,15 @@ const sendConfirmationEmail = (userInfo, rowIndex, header, sheet) => {
     MailApp.sendEmail(userInfo.email, subject, message, { htmlBody: buildHTMLBody(userInfo.fname) });
     sheet.getRange(rowIndex, header.EMAIL_SENT).setValue(EMAIL_SENT);
     SpreadsheetApp.flush();
+    postToLob(userInfo, rowIndex, header, sheet);
   }
 };
 
 // todo from jessi: please add in types in your function parameter definitions (see onFormSubmit for how to do it)
-const postToLob = (userInfo, rowIndex, header, sheet) => {
+const postToLob = (userInfo: UserInfo, rowIndex: number, header: any, sheet: GoogleAppsScript.Spreadsheet.Sheet) => {
+  if (userInfo.include === '') {
+    userInfo.email = '';
+  };
   let url = "https://api.lob.com/v1/postcards";
   let data = {
     description: "Postcard",
@@ -86,14 +94,13 @@ const postToLob = (userInfo, rowIndex, header, sheet) => {
     front: front_tmpl,
     back: back_tmpl,
     merge_variables: userInfo,
-
   };
   let options = {
     method: 'post',
     contentType: 'application/json',
     headers: {
       Authorization: "Basic " + Utilities.base64Encode(API_KEY + ":"),
-
+      'Idempotency-key': userInfo.key,
     },
     payload: JSON.stringify(data),
     muteHttpExceptions: true
@@ -102,6 +109,7 @@ const postToLob = (userInfo, rowIndex, header, sheet) => {
   try{
      // @ts-ignore
     let response = UrlFetchApp.fetch(url, options);
+    Logger.log('options for response: ', options);
     let responseCode = response.getResponseCode();
     let values = [[new Date(), responseCode]];
     sheet.getRange(rowIndex, header.SENT_TO_LOB, 1, 2).setValues(values);
