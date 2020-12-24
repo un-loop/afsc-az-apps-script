@@ -29,7 +29,8 @@ const onFormSubmit = (event: GoogleAppsScript.Events.SheetsOnFormSubmit) => {
   let header = Header.fieldToIndex(sheet, requiredFields);
   let rowIndex = event.range.getLastRow();
   sheet.getRange(rowIndex, header.IDEMPOTENCY_KEY).setValue(idempotencyKey);
-  let eventRow = sheet.getRange(rowIndex, 1, 1, sheet.getDataRange().getLastColumn()).getValues()[0]; // can grab zeroeth element only because onformsubmit is only ever one row
+          // can grab zeroeth element only because onformsubmit is only ever one row
+  let eventRow = sheet.getRange(rowIndex, 1, 1, sheet.getDataRange().getLastColumn()).getValues()[0];
   Logger.log("eventRow", eventRow);
   const userInfo = buildUserInfo(eventRow, header);
   sendConfirmationEmail(userInfo, rowIndex, header, sheet);
@@ -107,7 +108,6 @@ const postToLob = (userInfo: UserInfo, rowIndex: number, header: any, sheet: Goo
   try{
      // @ts-ignore
     let response = UrlFetchApp.fetch(url, options);
-    Logger.log('options for response: ', options);
     let responseCode = response.getResponseCode();
     let values = [[new Date(), responseCode]];
     sheet.getRange(rowIndex, header.SENT_TO_LOB, 1, 2).setValues(values);
@@ -119,33 +119,37 @@ const postToLob = (userInfo: UserInfo, rowIndex: number, header: any, sheet: Goo
   };
 };
 
-const retryFailedPost = (userInfo: UserInfo, rowIndex: number, header: any, sheet: GoogleAppsScript.Spreadsheet.Sheet) => {
-  let retry_count = sheet.getRange(rowIndex, header.RETRY_COUNT).getValue();
-  if (retry_count < 4) {
-    postToLob(userInfo, rowIndex, header, sheet);
-    sheet.getRange(rowIndex, header.RETRY_COUNT).setValue(retry_count + 1);
-  }
-};
-
-const onOpen = () => {
-  let ui = SpreadsheetApp.getUi();
-  let sheet = SpreadsheetApp.getActiveSheet();
-  let header = Header.fieldToIndex(sheet, requiredFields);
-  let rangeData = sheet.getDataRange().offset(2, 0).getValues();
-
+const retryFailedPost = () => {
+  const sheet = SpreadsheetApp.getActiveSheet();
+  const header = Header.fieldToIndex(sheet, requiredFields);
+  const rangeData = sheet.getDataRange().offset(2, 0).getValues();
   for (let i = 0; i < rangeData.length; i++) {
     let dataRow = rangeData[i];
     let userInfo = buildUserInfo(dataRow, header);
     // header map is 1 indexed, not 0 indexed
     let statusCode = dataRow[header.STATUS_CODE-1];
-    if ((statusCode !== 200) && (userInfo.city !== '')) {
-      Logger.log('not 200 ', statusCode);
-      Logger.log('email:', dataRow[header.EMAIL_ADDRESS-1]);
+    let retryCount = dataRow[header.RETRY_COUNT-1];
+    if ((statusCode !== 200) && (userInfo.city !== '') && (retryCount < 3)) {
       // sheetRowIndex is +3 because the rows are 1 based, and we offset by 2 when grabbing all of the data rows, so
       // we didn't have to iterate over both header rows
       const sheetRowIndex = i + 3;
-      retryFailedPost(userInfo, sheetRowIndex, header, sheet)
+      postToLob(userInfo, sheetRowIndex, header, sheet);
+      retryCount.setValue(retryCount + 1);
+    } else {
+      let subject = "Post to Lob Failed for ReFraming Justice Project Postcard";
+      let emailAddr = "becky@studio.un-loop.org";
+      let msg = `Hi Current AFSC Staff,
+      The post to Lob function failed for ${dataRow} because the 3 allotted attempts failed. Please look into the problem
+      manually if postcard is to be generated for them.` 
+      MailApp.sendEmail(userInfo.email, subject, msg);
     }
-
   }
+}
+
+const onOpen = () => {
+  const ui = SpreadsheetApp.getUi();
+  ui.createMenu('Special Features')
+    .addItem('Batch PostToLob', 'postToLob')
+    .addItem('Manual Retry', 'retryFailedPost')
+    .addToUi();
 }
