@@ -129,19 +129,19 @@ const retryFailedPost = () => {
     let statusCode = dataRow[header.STATUS_CODE-1];
     let retryCount = dataRow[header.RETRY_COUNT-1];
     let failedEmailSent = dataRow[header.FAILED_EMAIL_SENT-1];
+    // sheetRowIndex is +3 because the rows are 1 based, and we offset by 2 when grabbing all of the data rows, so
+    // we didn't have to iterate over both header rows
     const sheetRowIndex = i + 3;
-    if ((statusCode !== 200) && (userInfo.city !== '') && (retryCount < 3)) {
-      // sheetRowIndex is +3 because the rows are 1 based, and we offset by 2 when grabbing all of the data rows, so
-      // we didn't have to iterate over both header rows
-      postToLob(userInfo, sheetRowIndex, header, sheet);
-      sheet.getRange(sheetRowIndex, header.RETRY_COUNT, 1, 1).setValue(retryCount + 1);
-    } else {
-      if ((!failedEmailSent) && (statusCode !== 200) && (retryCount >= 3)) {
+    if ((statusCode !== 200) && (userInfo.city !== '')) {
+      if (retryCount < 3) {
+        postToLob(userInfo, sheetRowIndex, header, sheet);
+        sheet.getRange(sheetRowIndex, header.RETRY_COUNT, 1, 1).setValue(retryCount + 1);
+      } else if (!failedEmailSent) {
         let subject = "Post to Lob Failed for ReFraming Justice Project Postcard";
         let emailAddr = "becky@studio.un-loop.org";
         let msg = `Hi Current AFSC Staff,
         The post to Lob function failed for: ${dataRow} because the 3 allotted attempts failed. Please look into the problem
-        manually if postcard is to be generated for them.` 
+        manually if postcard is to be generated for them.`
         MailApp.sendEmail(emailAddr, subject, msg);
         sheet.getRange(sheetRowIndex, header.FAILED_EMAIL_SENT, 1, 1).setValue('Yes');
       }
