@@ -7,9 +7,8 @@ const createOnFormSubmitTrigger = () => {
 };
 
 const createRetryTrigger = () => {
-    let ss = SpreadsheetApp.getActive();
     ScriptApp.newTrigger('retryFailedPost')
-        .forSpreadsheet(ss)
-        .retryFailedPost()
+        .timeBased()
+        .everyHours(4)
         .create();
 };
