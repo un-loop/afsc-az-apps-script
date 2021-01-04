@@ -1,3 +1,7 @@
+/*
+code here would be just for the "main" functions that hook up to the
+google apps script events - onFormSubmit, anything we hook up as a trigger, etc.
+ */
 import { Header } from './Header';
 import {UserSubmission} from "./UserSubmission";
 
