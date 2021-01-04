@@ -18,4 +18,5 @@ const requiredFields = [
   'STATUS_CODE',
   'RETRY_COUNT',
   'IDEMPOTENCY_KEY',
+  'FAILED_EMAIL_SENT',
 ]
