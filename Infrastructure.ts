@@ -1,5 +1,5 @@
 const createOnFormSubmitTrigger = () => {
-    let ss = SpreadsheetApp.getActive();
+    const ss = SpreadsheetApp.getActive();
     ScriptApp.newTrigger('onFormSubmit')
         .forSpreadsheet(ss)
         .onFormSubmit()
