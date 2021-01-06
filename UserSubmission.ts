@@ -51,8 +51,8 @@ export class UserSubmission {
     if (this.row.include_email === '') {
       this.row.email = '';
     };
-    let url = "https://api.lob.com/v1/postcards";
-    let data = {
+    const url = "https://api.lob.com/v1/postcards";
+    const data = {
       description: "Postcard",
         to: toAddress,
       from: null,
@@ -60,7 +60,7 @@ export class UserSubmission {
       back: back_tmpl,
       merge_variables: this.row,
     };
-    let options = {
+    const options = {
       method: 'post',
       contentType: 'application/json',
       headers: {
@@ -73,9 +73,9 @@ export class UserSubmission {
     };
     try{
        // @ts-ignore
-      let response = UrlFetchApp.fetch(url, options);
-      let responseCode = response.getResponseCode();
-      let values = [[new Date(), responseCode]];
+      const response = UrlFetchApp.fetch(url, options);
+      const responseCode = response.getResponseCode();
+      const values = [[new Date(), responseCode]];
       this.sheet.getRange(this.rowIndex, this.header.SENT_TO_LOB, 1, 2).setValues(values);
     } catch (error) {
       Logger.log('error: ', error);
@@ -92,6 +92,7 @@ export class UserSubmission {
     try {
       sendConfirmationEmail(this.row)
     } catch (err) {
+      Logger.log('err: ', err);
       emailSentStatus = err.toString() === 'Email quota exceeded' ? QUOTA_EXCEEDED : emailSentStatus;
     }
     this.sheet.getRange(this.rowIndex, this.header.EMAIL_SENT, 1, 1).setValue(emailSentStatus);

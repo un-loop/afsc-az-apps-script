@@ -23,7 +23,7 @@ const buildTextBody = (fname: string): string => `Hi ${fname},
   AFSC-Arizona | ReFraming Justice`;
 
 export const sendConfirmationEmail = (userInfo: SubmissionInfo) => {
-  let emailQuotaRemaining = MailApp.getRemainingDailyQuota();
+  const emailQuotaRemaining = MailApp.getRemainingDailyQuota();
 
   // if we max out the quota (100 emails/24 hour period rolling)
   // emails will be locked up for 24 hours, so don't send an email
@@ -34,7 +34,7 @@ export const sendConfirmationEmail = (userInfo: SubmissionInfo) => {
   Logger.log("Remaining email quota: " + emailQuotaRemaining);
 
   if (userInfo.email_sent !== 'EMAIL_SENT') {
-    let subject = "ReFraming Justice Project";
+    const subject = "ReFraming Justice Project";
     MailApp.sendEmail(userInfo.email, subject, buildTextBody(userInfo.fname), { htmlBody: buildHTMLBody(userInfo.fname) });
     SpreadsheetApp.flush();
   }
