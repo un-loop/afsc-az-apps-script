@@ -68,6 +68,12 @@ const manualPostToLob = () => {
   }
 }
 
+const showHelp = () => {
+  const html = HtmlService.createHtmlOutputFromFile('CreatePostcardHelp.md')
+  SpreadsheetApp.getUi()
+    .showModalDialog(html, 'Create Postcard - Help')
+}
+
 const onOpen = () => {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu('Create Postcard')
