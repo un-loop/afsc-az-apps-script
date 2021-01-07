@@ -55,9 +55,6 @@ const manualPostToLob = () => {
   const header = Header.fieldToIndex(sheet, requiredFields);
   const activeRowNum = sheet.getActiveRange().getRow();
   const activeRows = sheet.getActiveRange().getValues();
-  Logger.log('activeRowNum: ', activeRowNum);
-  Logger.log('activeRows: ', activeRows);
-  // let highlightedRowCount = sheet.getActiveRange().getNumRows();
 
   let updatedRows:string[][] = [[]]
 
@@ -65,6 +62,7 @@ const manualPostToLob = () => {
     let updatedRow = activeRows[i]
     const submission = new UserSubmission(header, i + activeRowNum, sheet);
     submission.postToLob();
+    submission.incrementRetryCount();
   }
 }
 
