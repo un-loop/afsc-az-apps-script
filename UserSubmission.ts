@@ -76,12 +76,12 @@ export class UserSubmission {
       const response = UrlFetchApp.fetch(url, options);
       const responseCode = response.getResponseCode();
       const values = [[new Date(), responseCode]];
-      Logger.log('responseCode: ', responseCode);
 
       if (responseCode === 200.0) {
         this.sheet.getRange(this.rowIndex, this.header.SENT_TO_LOB, 1, 2).setValues(values);
       } else {
         this.sheet.getRange(this.rowIndex, this.header.SENT_TO_LOB, 1, 2).setValues(values).setBackground('yellow');
+        Logger.log('response: ', response.getContentText());
       }
     } catch (error) {
       Logger.log('error: ', error);
