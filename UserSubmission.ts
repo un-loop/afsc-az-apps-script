@@ -76,7 +76,13 @@ export class UserSubmission {
       const response = UrlFetchApp.fetch(url, options);
       const responseCode = response.getResponseCode();
       const values = [[new Date(), responseCode]];
-      this.sheet.getRange(this.rowIndex, this.header.SENT_TO_LOB, 1, 2).setValues(values);
+      Logger.log('responseCode: ', responseCode);
+
+      if (responseCode === 200.0) {
+        this.sheet.getRange(this.rowIndex, this.header.SENT_TO_LOB, 1, 2).setValues(values);
+      } else {
+        this.sheet.getRange(this.rowIndex, this.header.SENT_TO_LOB, 1, 2).setValues(values).setBackground('yellow');
+      }
     } catch (error) {
       Logger.log('error: ', error);
     };
@@ -99,7 +105,7 @@ export class UserSubmission {
   };
 
   markFailedEmailSent = () => {
-    this.sheet.getRange(this.rowIndex, this.header.FAILED_EMAIL_SENT, 1, 1).setValue('Yes');
+    this.sheet.getRange(this.rowIndex, this.header.FAILED_EMAIL_SENT, 1, 1).setValue('Yes').setBackground('red');
   };
 
 };
