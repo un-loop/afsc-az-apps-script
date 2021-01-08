@@ -2,7 +2,6 @@ import { sendConfirmationEmail } from './ConfirmationEmail';
 
 const EMAIL_SENT = 'EMAIL_SENT';
 const QUOTA_EXCEEDED = 'QUOTA_EXCEEDED';
-const idempotencyKey: string = Utilities.getUuid();
 
 export interface SubmissionInfo {
   fname: string
@@ -49,7 +48,10 @@ export class UserSubmission {
   );
 
   addIdempotencyKey = () => {
-    this.row.idempotency_key = idempotencyKey;
+    if (this.row.idempotency_key === '') {
+      this.row.idempotency_key = Utilities.getUuid();
+      this.sheet.getRange(this.rowIndex, this.header.IDEMPOTENCY_KEY, 1, 1).setValue(this.row.idempotency_key);
+    }
   }
 
   postToLob = () => {
