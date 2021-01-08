@@ -50,10 +50,28 @@ const retryFailedPost = () => {
   }
 }
 
+const manualPostToLob = () => {
+  const sheet = SpreadsheetApp.getActiveSheet();
+  const header = Header.fieldToIndex(sheet, requiredFields);
+  const activeRowNum = sheet.getActiveRange().getRow();
+  const activeRows = sheet.getActiveRange().getValues();
+  Logger.log('activeRowNum: ', activeRowNum);
+  Logger.log('activeRows: ', activeRows);
+  // let highlightedRowCount = sheet.getActiveRange().getNumRows();
+
+  let updatedRows:string[][] = [[]]
+
+  for (let i = 0; i < activeRows.length; i++) {
+    let updatedRow = activeRows[i]
+    const submission = new UserSubmission(header, i + activeRowNum, sheet);
+    submission.postToLob();
+  }
+}
+
 const onOpen = () => {
   const ui = SpreadsheetApp.getUi();
-  ui.createMenu('Special Features')
-    .addItem('Batch PostToLob', 'postToLob')
-    .addItem('Manual Retry', 'retryFailedPost')
+  ui.createMenu('Create Postcard')
+    .addItem('Manually Create Postcard', 'manualPostToLob')
+    .addItem('Create Postcard Help', 'showHelp')
     .addToUi();
 }
