@@ -2,6 +2,7 @@ import { sendConfirmationEmail } from './ConfirmationEmail';
 
 const EMAIL_SENT = 'EMAIL_SENT';
 const QUOTA_EXCEEDED = 'QUOTA_EXCEEDED';
+const idempotencyKey: string = Utilities.getUuid();
 
 export interface SubmissionInfo {
   fname: string
@@ -47,10 +48,15 @@ export class UserSubmission {
     }
   );
 
+  addIdempotencyKey = () => {
+    this.row.idempotency_key = idempotencyKey;
+  }
+
   postToLob = () => {
     if (this.row.include_email === '') {
       this.row.email = '';
     };
+    this.addIdempotencyKey();
     const url = "https://api.lob.com/v1/postcards";
     const data = {
       description: "Postcard",
