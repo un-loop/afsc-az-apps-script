@@ -80,7 +80,7 @@ export class UserSubmission {
       if (responseCode === 200.0) {
         this.sheet.getRange(this.rowIndex, this.header.SENT_TO_LOB, 1, 2).setValues(values);
       } else {
-        this.sheet.getRange(this.rowIndex, this.header.SENT_TO_LOB, 1, 2).setValues(values).setBackground('yellow');
+        this.sheet.getRange(this.rowIndex, this.header.SENT_TO_LOB, 1, 2).setValues(values);
         Logger.log('response: ', response.getContentText());
       }
     } catch (error) {
@@ -105,7 +105,7 @@ export class UserSubmission {
   };
 
   markFailedEmailSent = () => {
-    this.sheet.getRange(this.rowIndex, this.header.FAILED_EMAIL_SENT, 1, 1).setValue('Yes').setBackground('red');
+    this.sheet.getRange(this.rowIndex, this.header.FAILED_EMAIL_SENT, 1, 1).setValue('Yes');
   };
 
 };
