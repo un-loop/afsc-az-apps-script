@@ -5,14 +5,14 @@ const QUOTA_EXCEEDED = 'QUOTA_EXCEEDED';
 
 export interface SubmissionInfo {
   fname: string
-    lname: string
-    email: string
-    city: string
-    reason: string
-    include_email: string
-    idempotency_key: string
-    email_sent: string
-    retry_count: number
+  lname: string
+  email: string
+  city: string
+  reason: string
+  include_email: string
+  idempotency_key: string
+  email_sent: string
+  retry_count: number
 }
 
 export class UserSubmission {
@@ -40,7 +40,7 @@ export class UserSubmission {
       email: row[this.header.EMAIL_ADDRESS - 1],
       city: row[this.header.CITY - 1],
       reason: row[this.header.REASON - 1],
-      include_email: row[this.header.INCLUDE_EMAIL - 1],
+      include_email: row[this.header.EMAIL_INCLUDE - 1],
       idempotency_key: row[this.header.IDEMPOTENCY_KEY - 1],
       email_sent: row[this.header.EMAIL_SENT - 1],
       retry_count: row[this.header.RETRY_COUNT - 1]
@@ -54,10 +54,17 @@ export class UserSubmission {
     }
   }
 
+  charCaseConsistency = () => {
+    this.row.city = this.row.city.charAt(0).toUpperCase() + this.row.city.toLowerCase().slice(1);
+  }
+
   postToLob = () => {
-    if (this.row.include_email === '') {
+    if (!this.row.include_email) {
       this.row.email = '';
-    };
+    } else {
+      this.row.email = this.row.email.toLowerCase();
+    }
+    this.charCaseConsistency();
     this.addIdempotencyKey();
     const url = "https://api.lob.com/v1/postcards";
     const data = {
@@ -88,7 +95,7 @@ export class UserSubmission {
       if (responseCode === 200.0) {
         this.sheet.getRange(this.rowIndex, this.header.SENT_TO_LOB, 1, 2).setValues(values);
       } else {
-        this.sheet.getRange(this.rowIndex, this.header.SENT_TO_LOB, 1, 2).setValues(values).setBackground('yellow');
+        this.sheet.getRange(this.rowIndex, this.header.SENT_TO_LOB, 1, 2).setValues(values);
         Logger.log('response: ', response.getContentText());
       }
     } catch (error) {
@@ -101,8 +108,11 @@ export class UserSubmission {
     this.sheet.getRange(this.rowIndex, this.header.RETRY_COUNT, 1, 1).setValue(this.row.retry_count);
   };
 
-  sendConfirmationEmail = () => {
+  sendConfirmationEmail() {
     let emailSentStatus = EMAIL_SENT;
+    const emailQuotaRemaining = MailApp.getRemainingDailyQuota();
+    Logger.log("Remaining email quota: " + emailQuotaRemaining);
+    Logger.log('this.row: ', this.row);
     try {
       sendConfirmationEmail(this.row)
     } catch (err) {
@@ -113,7 +123,7 @@ export class UserSubmission {
   };
 
   markFailedEmailSent = () => {
-    this.sheet.getRange(this.rowIndex, this.header.FAILED_EMAIL_SENT, 1, 1).setValue('Yes').setBackground('red');
+    this.sheet.getRange(this.rowIndex, this.header.FAILED_EMAIL_SENT, 1, 1).setValue('Yes');
   };
 
 };
