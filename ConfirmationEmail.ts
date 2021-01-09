@@ -22,13 +22,13 @@ const buildTextBody = (fname: string): string => `Hi ${fname},
   Stay safe & stay strong!
   AFSC-Arizona | ReFraming Justice`;
 
-export const sendConfirmationEmail = (userInfo: SubmissionInfo) => {
+export function sendConfirmationEmail(userInfo: SubmissionInfo) {
   const emailQuotaRemaining = MailApp.getRemainingDailyQuota();
 
   // if we max out the quota (100 emails/24 hour period rolling)
   // emails will be locked up for 24 hours, so don't send an email
   if (emailQuotaRemaining < 30) {
-    return Error("Email quota exceeded")
+    throw new Error("Email quota exceeded")
   }
 
   Logger.log("Remaining email quota: " + emailQuotaRemaining);
