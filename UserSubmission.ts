@@ -54,8 +54,14 @@ export class UserSubmission {
     }
   }
 
-  charCaseConsistency = () => {
-    this.row.city = this.row.city.charAt(0).toUpperCase() + this.row.city.toLowerCase().slice(1);
+
+  setCityTitleCase = () => {
+    let city = this.row.city.toLowerCase().split(' ');
+    for (let i = 0; i < city.length; i++) {
+      city[i] = city[i].charAt(0).toUpperCase() + city[i].slice(1);
+    }
+    this.row.city = city.join(' ');
+    this.sheet.getRange(this.rowIndex, this.header.CITY).setValue(this.row.city);
   }
 
   postToLob = () => {
@@ -64,7 +70,8 @@ export class UserSubmission {
     } else {
       this.row.email = this.row.email.toLowerCase();
     }
-    this.charCaseConsistency();
+
+    this.setCityTitleCase();
     this.addIdempotencyKey();
     const url = "https://api.lob.com/v1/postcards";
     const data = {

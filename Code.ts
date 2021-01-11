@@ -4,6 +4,7 @@ import { UserSubmission } from './UserSubmission';
 const onFormSubmit = (event: GoogleAppsScript.Events.SheetsOnFormSubmit) => {
   const sheet = SpreadsheetApp.getActiveSheet();
   const header = Header.fieldToIndex(sheet, requiredFields);
+  Logger.log('header in onFormSubmit: ', header);
   const rowIndex = event.range.getLastRow();
 
   // can grab zeroeth element only because onformsubmit is only ever one row
