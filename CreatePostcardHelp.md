@@ -10,7 +10,7 @@ Upon form submission, all the responses are logged onto a Spreadsheet. A confirm
 
 To [manually submit](https://afsc-az-project.s3.us-east-2.amazonaws.com/multiSubmit.gif) a data row to Lob to create a postcard, highlight a single row and select the Create Postcard menu item then selecting Manually Create Postcard to retry posting to Lob. This will only work if there is not already a status code of 200 in the status code column. When a post is successful, there is a date in the Post to Lob column, a 200 in the Status Code column and the Idempotency Key is also filled in.   
 
-<img src="https://afsc-az-project.s3.us-east-2.amazonaws.com/multiSubmit.gif" alt="single submit rows gif">
+<img src="https://afsc-az-project.s3.us-east-2.amazonaws.com/multiSubmit.gif" style="width: 950px;" alt="single submit rows gif">
 
 When a Post to Lob fails, the retry attempts are documented in the Retry Count column in the Spreadsheet. The Idempotency Key will automatically keep Lob from accidentally creating more than one Postcard should the information be posted successfully more than once. 
 
@@ -18,7 +18,7 @@ When a Post to Lob fails, the retry attempts are documented in the Retry Count c
 ## Manually Creating Postcards in Batches
 
 Suggested batch size is 100 due to limitations, (see below). To perform a [batch posting](https://afsc-az-project.s3.us-east-2.amazonaws.com/multiSubmit.gif), select contiguous rows up to 100 and select the Create Postcard menu item then select Manually Create Postcard. You can watch the Spreadsheet while the submissions are updating the information needed to the Spreadsheet.
-<img src="https://afsc-az-project.s3.us-east-2.amazonaws.com/multiSubmit.gif" alt="multi submit rows gif">
+<img src="https://afsc-az-project.s3.us-east-2.amazonaws.com/multiSubmit.gif" style="width: 950px;" alt="multi submit rows gif">
 
 ## Limitations
 
