@@ -1,13 +1,13 @@
 import { Header } from './Header';
 import { UserSubmission } from './UserSubmission';
 
-const idempotencyKey: string = Utilities.getUuid();
-
 const onFormSubmit = (event: GoogleAppsScript.Events.SheetsOnFormSubmit) => {
   const sheet = SpreadsheetApp.getActiveSheet();
   const header = Header.fieldToIndex(sheet, requiredFields);
+  Logger.log('header in onFormSubmit: ', header);
   const rowIndex = event.range.getLastRow();
-  sheet.getRange(rowIndex, header.IDEMPOTENCY_KEY).setValue(idempotencyKey);
+  Logger.log('rowIndex: ', rowIndex);
+  Logger.log(event.range.getValues());
 
   // can grab zeroeth element only because onformsubmit is only ever one row
   const eventRow = sheet.getRange(rowIndex, 1, 1, sheet.getDataRange().getLastColumn()).getValues()[0];

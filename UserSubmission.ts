@@ -5,14 +5,14 @@ const QUOTA_EXCEEDED = 'QUOTA_EXCEEDED';
 
 export interface SubmissionInfo {
   fname: string
-    lname: string
-    email: string
-    city: string
-    reason: string
-    include_email: string
-    idempotency_key: string
-    email_sent: string
-    retry_count: number
+  lname: string
+  email: string
+  city: string
+  reason: string
+  include_email: string
+  idempotency_key: string
+  email_sent: string
+  retry_count: number
 }
 
 export class UserSubmission {
@@ -40,17 +40,38 @@ export class UserSubmission {
       email: row[this.header.EMAIL_ADDRESS - 1],
       city: row[this.header.CITY - 1],
       reason: row[this.header.REASON - 1],
-      include_email: row[this.header.INCLUDE_EMAIL - 1],
+      include_email: row[this.header.EMAIL_INCLUDE - 1],
       idempotency_key: row[this.header.IDEMPOTENCY_KEY - 1],
       email_sent: row[this.header.EMAIL_SENT - 1],
       retry_count: row[this.header.RETRY_COUNT - 1]
     }
   );
 
+  addIdempotencyKey = () => {
+    if (this.row.idempotency_key === '') {
+      this.row.idempotency_key = Utilities.getUuid();
+      this.sheet.getRange(this.rowIndex, this.header.IDEMPOTENCY_KEY, 1, 1).setValue(this.row.idempotency_key);
+    }
+  }
+
+  setCityTitleCase = () => {
+    let city = this.row.city.toLowerCase().split(' ');
+    for (let i = 0; i < city.length; i++) {
+      city[i] = city[i].charAt(0).toUpperCase() + city[i].slice(1);
+    }
+    this.row.city = city.join(' ');
+    this.sheet.getRange(this.rowIndex, this.header.CITY).setValue(this.row.city);
+
+  }
+
   postToLob = () => {
-    if (this.row.include_email === '') {
+    if (!this.row.include_email) {
       this.row.email = '';
-    };
+    } else {
+      this.row.email = this.row.email.toLowerCase();
+    }
+    this.setCityTitleCase();
+    this.addIdempotencyKey();
     const url = "https://api.lob.com/v1/postcards";
     const data = {
       description: "Postcard",
@@ -76,12 +97,12 @@ export class UserSubmission {
       const response = UrlFetchApp.fetch(url, options);
       const responseCode = response.getResponseCode();
       const values = [[new Date(), responseCode]];
-      Logger.log('responseCode: ', responseCode);
 
       if (responseCode === 200.0) {
         this.sheet.getRange(this.rowIndex, this.header.SENT_TO_LOB, 1, 2).setValues(values);
       } else {
-        this.sheet.getRange(this.rowIndex, this.header.SENT_TO_LOB, 1, 2).setValues(values).setBackground('yellow');
+        this.sheet.getRange(this.rowIndex, this.header.SENT_TO_LOB, 1, 2).setValues(values);
+        Logger.log('response: ', response.getContentText());
       }
     } catch (error) {
       Logger.log('error: ', error);
@@ -93,7 +114,7 @@ export class UserSubmission {
     this.sheet.getRange(this.rowIndex, this.header.RETRY_COUNT, 1, 1).setValue(this.row.retry_count);
   };
 
-  sendConfirmationEmail = () => {
+  sendConfirmationEmail() {
     let emailSentStatus = EMAIL_SENT;
     try {
       sendConfirmationEmail(this.row)
@@ -105,7 +126,7 @@ export class UserSubmission {
   };
 
   markFailedEmailSent = () => {
-    this.sheet.getRange(this.rowIndex, this.header.FAILED_EMAIL_SENT, 1, 1).setValue('Yes').setBackground('red');
+    this.sheet.getRange(this.rowIndex, this.header.FAILED_EMAIL_SENT, 1, 1).setValue('Yes');
   };
 
 };
