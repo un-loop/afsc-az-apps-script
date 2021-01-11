@@ -27,6 +27,10 @@ const buildTextBody = (fname: string, reason: string): string => `Hi ${fname},
   AFSC-Arizona | ReFraming Justice`;
 
 export function sendConfirmationEmail(userInfo: SubmissionInfo) {
+<<<<<<< HEAD
+=======
+  Logger.log('userInfo: ', userInfo);
+>>>>>>> 441f411 (Fixed More the Idempotency Key - Add Reason to Emails)
   const emailQuotaRemaining = MailApp.getRemainingDailyQuota();
 
   // if we max out the quota (100 emails/24 hour period rolling)

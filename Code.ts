@@ -6,14 +6,12 @@ const onFormSubmit = (event: GoogleAppsScript.Events.SheetsOnFormSubmit) => {
   const header = Header.fieldToIndex(sheet, requiredFields);
   Logger.log('header in onFormSubmit: ', header);
   const rowIndex = event.range.getLastRow();
-  Logger.log('rowIndex: ', rowIndex);
-  Logger.log(event.range.getValues());
 
   // can grab zeroeth element only because onformsubmit is only ever one row
   const eventRow = sheet.getRange(rowIndex, 1, 1, sheet.getDataRange().getLastColumn()).getValues()[0];
 
   const submission = new UserSubmission(header, rowIndex, sheet);
-  
+
   submission.sendConfirmationEmail();
   submission.postToLob();
 };
@@ -24,7 +22,7 @@ const retryFailedPost = () => {
   const rangeData = sheet.getDataRange().offset(2, 0).getValues();
   for (let i = 0; i < rangeData.length; i++) {
     const dataRow = rangeData[i];
- 
+
     // header map is 1 indexed, not 0 indexed
     const statusCode = dataRow[header.STATUS_CODE-1];
     const retryCount = dataRow[header.RETRY_COUNT-1];
@@ -67,7 +65,9 @@ const manualPostToLob = () => {
 }
 
 const showHelp = () => {
-  const html = HtmlService.createHtmlOutputFromFile('CreatePostcardHelp.md')
+  const html = HtmlService.createHtmlOutputFromFile('CreatePostcardHelp').setWidth(1000)
+      .setHeight(700)
+      .setSandboxMode(HtmlService.SandboxMode.NATIVE);
   SpreadsheetApp.getUi()
     .showModalDialog(html, 'Create Postcard - Help')
 }

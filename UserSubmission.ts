@@ -54,6 +54,7 @@ export class UserSubmission {
     }
   }
 
+
   setCityTitleCase = () => {
     let city = this.row.city.toLowerCase().split(' ');
     for (let i = 0; i < city.length; i++) {
@@ -61,7 +62,6 @@ export class UserSubmission {
     }
     this.row.city = city.join(' ');
     this.sheet.getRange(this.rowIndex, this.header.CITY).setValue(this.row.city);
-
   }
 
   postToLob = () => {
@@ -70,6 +70,7 @@ export class UserSubmission {
     } else {
       this.row.email = this.row.email.toLowerCase();
     }
+
     this.setCityTitleCase();
     this.addIdempotencyKey();
     const url = "https://api.lob.com/v1/postcards";
@@ -116,6 +117,9 @@ export class UserSubmission {
 
   sendConfirmationEmail() {
     let emailSentStatus = EMAIL_SENT;
+    const emailQuotaRemaining = MailApp.getRemainingDailyQuota();
+    Logger.log("Remaining email quota: " + emailQuotaRemaining);
+    Logger.log('this.row: ', this.row);
     try {
       sendConfirmationEmail(this.row)
     } catch (err) {
