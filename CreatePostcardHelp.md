@@ -17,7 +17,8 @@ When a Post to Lob fails, the retry attempts are documented in the Retry Count c
 
 ## Manually Creating Postcards in Batches
 
-Suggested batch size is 100 due to limitations, (see below). To perform a [batch posting](https://afsc-az-project.s3.us-east-2.amazonaws.com/multiSubmit.gif), select contiguous rows up to 100 and select the Create Postcard menu item then select Manually Create Postcard. You can watch the Spreadsheet while the submissions are updating the information needed to the Spreadsheet.
+Suggested batch size is 100 due to limitations, (see below). To perform a [batch posting](https://afsc-az-project.s3.us-east-2.amazonaws.com/multiSubmit.gif), select contiguous rows up to 100 and select the Create Postcard menu item then select Manually Create Postcard. You can watch the Spreadsheet while the submissions are updating the information needed to the Spreadsheet.  
+
 <img src="https://afsc-az-project.s3.us-east-2.amazonaws.com/multiSubmit.gif" style="width: 950px;" alt="multi submit rows gif">
 
 ## Limitations

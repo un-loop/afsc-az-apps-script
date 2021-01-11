@@ -8,8 +8,9 @@
 
 <p>When a Post to Lob fails, the retry attempts are documented in the Retry Count column in the Spreadsheet. The Idempotency Key will automatically keep Lob from accidentally creating more than one Postcard should the information be posted successfully more than once. </p>
 <h2 id="manually-creating-postcards-in-batches">Manually Creating Postcards in Batches</h2>
-<p>Suggested batch size is 100 due to limitations, (see below). To perform a <a href="https://afsc-az-project.s3.us-east-2.amazonaws.com/multiSubmit.gif">batch posting</a>, select contiguous rows up to 100 and select the Create Postcard menu item then select Manually Create Postcard. You can watch the Spreadsheet while the submissions are updating the information needed to the Spreadsheet.
-<img src="https://afsc-az-project.s3.us-east-2.amazonaws.com/multiSubmit.gif" style="width: 950px;" alt="multi submit rows gif"></p>
+<p>Suggested batch size is 100 due to limitations, (see below). To perform a <a href="https://afsc-az-project.s3.us-east-2.amazonaws.com/multiSubmit.gif">batch posting</a>, select contiguous rows up to 100 and select the Create Postcard menu item then select Manually Create Postcard. You can watch the Spreadsheet while the submissions are updating the information needed to the Spreadsheet.  </p>
+<img src="https://afsc-az-project.s3.us-east-2.amazonaws.com/multiSubmit.gif" style="width: 950px;" alt="multi submit rows gif">
+
 <h2 id="limitations">Limitations</h2>
 <p>This app does not test City to be a valid Arizona city. It is strictly based on the Participants answer to the Form asking, &quot;Do you live in Arizona?&quot;. All Yes responses are sent to Create Postcard.  </p>
 <p>Posts are limited to 150 posts for every five minutes to the third party company creating postcards.</p>
