@@ -27,7 +27,6 @@ const buildTextBody = (fname: string, reason: string): string => `Hi ${fname},
   AFSC-Arizona | ReFraming Justice`;
 
 export function sendConfirmationEmail(userInfo: SubmissionInfo) {
-  Logger.log('userInfo: ', userInfo);
   const emailQuotaRemaining = MailApp.getRemainingDailyQuota();
 
   // if we max out the quota (100 emails/24 hour period rolling)
