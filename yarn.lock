@@ -6,3 +6,8 @@
   version "1.0.20"
   resolved "https://registry.yarnpkg.com/@types/google-apps-script/-/google-apps-script-1.0.20.tgz#f4c1a7ef314dfb6fdaee6b004df82bc2f57a373a"
   integrity sha512-fFhz4RXlOttCEBheu7BWyNkdS+O9wx5Aa7d/ygD2SE+aA8S/G7ZhzDJx0h3JS+T5WvrrDpv6E3TPm1vtbx+XLw==
+
+marked@^1.2.7:
+  version "1.2.7"
+  resolved "https://registry.yarnpkg.com/marked/-/marked-1.2.7.tgz#6e14b595581d2319cdcf033a24caaf41455a01fb"
+  integrity sha512-No11hFYcXr/zkBvL6qFmAp1z6BKY3zqLMHny/JN/ey+al7qwCM2+CMBL9BOgqMxZU36fz4cCWfn2poWIf7QRXA==
