@@ -71,7 +71,6 @@ export class UserSubmission {
       this.row.email = this.row.email.toLowerCase();
     }
     this.setCityTitleCase();
-    Logger.log('this.row.city: ', this.row.city);
     this.addIdempotencyKey();
     const url = "https://api.lob.com/v1/postcards";
     const data = {
@@ -117,7 +116,6 @@ export class UserSubmission {
 
   sendConfirmationEmail() {
     let emailSentStatus = EMAIL_SENT;
-    Logger.log('this.header inside sendConfirmationEmail: ', this.header);
     try {
       sendConfirmationEmail(this.row)
     } catch (err) {
